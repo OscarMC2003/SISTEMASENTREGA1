@@ -23,7 +23,7 @@ int main (int argc, char** argv){
 	
 	//Abrirmos los archivos necesarios para el programa de calculo de cache en modo lectura
 	FILE *Simul_RAM;
-	Simul_RAM = fopen(CONTENTS_RAM.bin, "r"); //mirar si se tiene que abrir en binario --preguntar--
+	Simul_RAM = fopen("CONTENTS_RAM.bin", "r"); //mirar si se tiene que abrir en binario --preguntar--
 	
 	if(Simul_RAM == NULL){
 		printf("Error, archivo no encontrado\n");  //condicion en la que si el archivo no se encuentra en el directorio acaba el programa con un error
@@ -31,7 +31,7 @@ int main (int argc, char** argv){
 	}
 	
 	FILE *dirs_memoria;
-	dirs_memoria = fopen(accesos_memoria.txt, "r");
+	dirs_memoria = fopen("accesos_memoria.txt", "r");
 	
 	if(dirs_memoria == NULL){
 		printf("Error, archivo no encontrado\n");  //condicion en la que si el archivo no se encuentra en el directorio acaba el programa con un error
