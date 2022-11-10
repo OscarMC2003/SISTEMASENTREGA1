@@ -26,9 +26,6 @@ int main (int argc, char** argv){
 	T_CACHE_LINE memoria[NUM_FILAS];
 	LimpiarCACHE(memoria);
 	
-	//inicializar array de Simul_RAM
-	Simul_RAM[L_RAM];
-	
 	//Abrirmos los archivos necesarios para el programa de calculo de cache en modo lectura
 	FILE *CONTENTS_RAM;
 	CONTENTS_RAM = fopen("CONTENTS_RAM.bin", "r"); //mirar si se tiene que abrir en binario --preguntar--
