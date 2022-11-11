@@ -26,6 +26,10 @@ int main (int argc, char** argv){
 	T_CACHE_LINE memoria[NUM_FILAS];
 	LimpiarCACHE(memoria);
 	
+	//inicializar array de Simul_RAM
+	//char Simul_RAM[LRAM];
+	char Simul_RAM[LRAM];
+	
 	//Abrirmos los archivos necesarios para el programa de calculo de cache en modo lectura
 	FILE *CONTENTS_RAM;
 	CONTENTS_RAM = fopen("CONTENTS_RAM.bin", "r"); //mirar si se tiene que abrir en binario --preguntar--
@@ -34,8 +38,15 @@ int main (int argc, char** argv){
 		printf("Error, archivo CONTENTS_RAM.bin no encontrado\n");  //condicion en la que si el archivo no se encuentra en el directorio acaba el programa con un error
 		return -1;
 	}else{	//guardar contenido de CONTENTS_RAM en Simul_RAM
-		
-		
+				
+		int contAux=0;			
+		while(feof(CONTENTS_RAM) == 0)
+		{
+			Simul_RAM[contAux]=getc(CONTENTS_RAM);		
+			contAux++;
+		}		
+
+		printf("%s", Simul_RAM);			
 			
 	}
 	
