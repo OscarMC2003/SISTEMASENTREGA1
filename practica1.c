@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define NUM_FILAS 8
 #define MAX_LINE 100
@@ -46,7 +47,7 @@ int main (int argc, char** argv){
 			contAux++;
 		}		
 
-		printf("%s", Simul_RAM);			   //Prueba viendo por pantalla de que se guarda correctamente
+		//printf("%s", Simul_RAM);			   //Prueba viendo por pantalla de que se guarda correctamente
 			
 	}
 	
@@ -57,6 +58,14 @@ int main (int argc, char** argv){
 	if(dirs_memoria == NULL){
 		printf("Error, archivo accesos_memoria.txt no encontrado\n");  //condicion en la que si el archivo no se encuentra en el directorio acaba el programa con un error
 		return -1;
+	}else{
+		int* aux_leer=NULL;
+
+		while(feof(dirs_memoria)==0){
+			strtok(aux_leer, "\n");
+			printf("%d \n", aux_leer);
+		}
+		
 	}
 	
 	//cerrar los archivos
