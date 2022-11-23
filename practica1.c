@@ -53,17 +53,19 @@ int main (int argc, char** argv){
 	
 	
 	FILE *dirs_memoria;
-	dirs_memoria = fopen("accesos_memoria.txt", "r");
+	dirs_memoria = fopen("accesos_memoria.txt", "r");   //Abre en binario numeros en hexadecimal
 	
 	if(dirs_memoria == NULL){
 		printf("Error, archivo accesos_memoria.txt no encontrado\n");  //condicion en la que si el archivo no se encuentra en el directorio acaba el programa con un error
 		return -1;
 	}else{
-		int* aux_leer=NULL;
+		char aux_leer[3];
 
 		while(feof(dirs_memoria)==0){
-			strtok(aux_leer, "\n");
-			printf("%d \n", aux_leer);
+			fgets(aux_leer, 3, dirs_memoria);  //saca una direccion de memoria y la guarda en la variable aux_leer		
+			printf("%s", aux_leer);	
+			
+			
 		}
 		
 	}

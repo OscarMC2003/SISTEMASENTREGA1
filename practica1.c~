@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define NUM_FILAS 8
 #define MAX_LINE 100
@@ -40,23 +41,41 @@ int main (int argc, char** argv){
 	}else{	//guardar contenido de CONTENTS_RAM en Simul_RAM
 				
 		int contAux=0;			
-		while(feof(CONTENTS_RAM) == 0)
+		while(feof(CONTENTS_RAM) == 0)  //pasa al string Simul_Ram el contenido del archivo CONTENTS_RAM
 		{
 			Simul_RAM[contAux]=getc(CONTENTS_RAM);		
 			contAux++;
 		}		
 
-		printf("%s", Simul_RAM);			
+		//printf("%s", Simul_RAM);			   //Prueba viendo por pantalla de que se guarda correctamente
 			
 	}
 	
 	
 	FILE *dirs_memoria;
-	dirs_memoria = fopen("accesos_memoria.txt", "r");
+	dirs_memoria = fopen("accesos_memoria.txt", "r");   //Abre en binario numeros en hexadecimal
 	
 	if(dirs_memoria == NULL){
 		printf("Error, archivo accesos_memoria.txt no encontrado\n");  //condicion en la que si el archivo no se encuentra en el directorio acaba el programa con un error
 		return -1;
+	}else{
+		char aux_leer[3];
+		int decimal=0;
+		char aux_binario[8];
+
+		while(feof(dirs_memoria)==0){
+			fgets(aux_leer, 3, dirs_memoria);  //saca una direccion de memoria y la guarda en la variable aux_leer		
+			printf("%s", aux_leer);	
+			
+			
+			while(aux_leer [i] != '\0'){
+				decimal = (long)aux_leer[i];
+				itoa(decimal, aux_binario, 2);
+				
+			}
+			
+		}
+		
 	}
 	
 	//cerrar los archivos
