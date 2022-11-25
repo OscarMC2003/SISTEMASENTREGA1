@@ -96,7 +96,7 @@ int main (int argc, char** argv){
 	fclose(dirs_memoria);
 	
 	VolcarCACHE(memoria);
-	printf("Accesos totales: %d, Fallos: %d, Tiempo medio: %f ms \n",accesos,numfallos,(double)clock()/1000); //mostrar estadisticas de la ejecucion
+	printf("\nAccesos totales: %d, Fallos: %d, Tiempo medio: %f ms \n",accesos,numfallos,(double)clock()/1000); //mostrar estadisticas de la ejecucion
    printf("Texto leido: %s \n",texto); //Muestra de texto
 
 	return 0;
@@ -263,7 +263,7 @@ void VolcarCACHE(T_CACHE_LINE *tbl)
     
     volcado = fopen("CONTENTS_CACHE.bin", "w+b"); // sino exixte se crea el archivo en modo escritura y en binario
 	
-	if (volcado ==NULL){
+	if (volcado == NULL){
 		printf("Error al crear el fichero CONTENTS_CACHE.bin\n");
 	}
 	else {
@@ -278,5 +278,5 @@ void VolcarCACHE(T_CACHE_LINE *tbl)
             fwrite(tambuffer, sizeof(tambuffer),1,volcado);  //pasamos al archivo la informacion del array byte  a byte
         }        
 	}
-
+	fclose(volcado);
 }

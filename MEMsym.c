@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h> //funcion sleep
 #include <ctype.h> //funcion isdigit (lo usamos para la funcion pasar a binario)
+#include <time.h> //para la funcion clock (tiempo medio de acceso)
 #include <math.h> //para pasar de binario a deciaml (lo usamos para las potencias de 2)
 //la libreria math.h no está en linux, asi que se tiene que compilar con -lm al final (gcc MEMsym.c -lm -o memsym)
 //https://xbalban.wordpress.com/2014/08/16/no-compila-error-con-libreria-math-h-en-gnulinux-solucion/
@@ -20,7 +21,7 @@ typedef struct {
 void LimpiarCACHE(T_CACHE_LINE tbl[NUM_FILAS]);
 void VolcarCACHE(T_CACHE_LINE *tbl);
 void ParsearDireccion(char binario [],int direccion_cortada []);
-void TratarFallo(T_CACHE_LINE *memoria, int direccion, char MRAM[]);  // en la variable direccion  tenemos guardadas la etiqueta, el bloque, la palabra y la linea
+void TratarFallo(T_CACHE_LINE *memoria, int *direccion, char MRAM[]);  // en la variable direccion  tenemos guardadas la etiqueta, el bloque, la palabra y la linea
 int * PasarABinario(int * direccion_cortada,char MRAM []);
 int PasarADecimal(long long n);
 
@@ -78,9 +79,9 @@ int main (int argc, char** argv){
 			
 			if((int)memoria[direccion[1]].ETQ==direccion[0])  //direccion[1]==Linea , direccion[0]==etiqueta y direccion[3]==Bloque
 			{
-				 printf("T: %d, Acierto de CACHE %d, ADDR %s Label %X linea %02X palabra %02X DATO %02X \n", globaltime, accesos-numfallos+1, MRAM, direccion[0], direccion[1],direccion[2], memoria[direccion[1]].Data[direccion[2]]);
+				 printf("T: %d, Acierto de CACHE %d, ADDR %s, Label %X, linea %02X, palabra %02X, DATO %02X \n", globaltime, accesos-numfallos+1, MRAM, direccion[0], direccion[1],direccion[2], memoria[direccion[1]].Data[direccion[2]]);
 			}else{
-				TratarFallo(*memoria, direccion, MRAM/*aqui tenemos la etiqueta, la linea y el bloque*/);			
+				TratarFallo(memoria, direccion, MRAM/*aqui tenemos la etiqueta, la linea y el bloque*/);			
 			}
 			
 			texto[accesos]=memoria[direccion[1]].Data[direccion[2]];		
@@ -89,12 +90,14 @@ int main (int argc, char** argv){
 			
 		}			
 	}
-		
-	VolcarCache(memoria);
 	
 	//cerrar los archivos
 	fclose(CONTENTS_RAM);
 	fclose(dirs_memoria);
+	
+	VolcarCACHE(memoria);
+	printf("\nAccesos totales: %d, Fallos: %d, Tiempo medio: %f ms \n",accesos,numfallos,(double)clock()/1000); //mostrar estadisticas de la ejecucion
+   printf("Texto leido: %s \n",texto); //Muestra de texto
 
 	return 0;
 }
@@ -109,14 +112,14 @@ void LimpiarCACHE(T_CACHE_LINE tbl[NUM_FILAS]){
 	}
 	
 	//imprimir todo
-	for(int i=0; i<NUM_FILAS; i++){
+	/*for(int i=0; i<NUM_FILAS; i++){
 		//printf("%c",tbl->ETQ);
 		for(int j=0; j<TAM_LINEA; j++){
 			printf("%x", tbl[i].Data[j]);
 		}
 		printf("\n");
 			
-	}
+	}*/
 }
 
 int * PasarABinario(int * direccion_cortada,char MRAM []){
@@ -226,8 +229,7 @@ void ParsearDireccion(char binario [],int direccion_cortada []){
    direccion_cortada[2]=PasarADecimal(palabra_separada2);
 }
 
-void TratarFallo(T_CACHE_LINE *memoria, int direccion, char MRAM[])
-{
+void TratarFallo(T_CACHE_LINE *memoria, int *direccion, char MRAM[]){
 	numfallos++;
 	globaltime = globaltime + 10;
 	
@@ -238,7 +240,7 @@ void TratarFallo(T_CACHE_LINE *memoria, int direccion, char MRAM[])
 	
 	for(int i = 0; i<TAM_LINEA; i++)  //Actualizar los datos con la extraccion del texto
 	{
-		memoria[direccion[1]].Data[i] = Simul_RAM[direccion[3] + TAM_LINEA*i]	
+		memoria[direccion[1]].Data[i] = Simul_RAM[direccion[3] + TAM_LINEA*i];	
 	}
 }
 
@@ -261,15 +263,13 @@ void VolcarCACHE(T_CACHE_LINE *tbl)
     
     volcado = fopen("CONTENTS_CACHE.bin", "w+b"); // sino exixte se crea el archivo en modo escritura y en binario
 	
-	if (volcado ==NUL)
-	{
+	if (volcado == NULL){
 		printf("Error al crear el fichero CONTENTS_CACHE.bin\n");
-		return -1;
 	}
 	else {
 		 for(int i=0;i<NUM_FILAS;i++){
             for(int j=0;j<TAM_LINEA;j++){
-                tambuffer[aux]=memoria[i].Data[j];  //guardamos la inftomacion de la estructura en una array de su tamaño para luego poder pasarlo al archivo
+                tambuffer[aux]=tbl[i].Data[j];  //guardamos la inftomacion de la estructura en una array de su tamaño para luego poder pasarlo al archivo
                 aux++;
             }
         }
@@ -278,6 +278,5 @@ void VolcarCACHE(T_CACHE_LINE *tbl)
             fwrite(tambuffer, sizeof(tambuffer),1,volcado);  //pasamos al archivo la informacion del array byte  a byte
         }        
 	}
-
-
-
+	fclose(volcado);
+}
