@@ -18,9 +18,9 @@ typedef struct {
 } T_CACHE_LINE;
 
 void LimpiarCACHE(T_CACHE_LINE tbl[NUM_FILAS]);
-//void VolcarCACHE(T_CACHE_LINE *tbl);
+void VolcarCACHE(T_CACHE_LINE *tbl);
 void ParsearDireccion(char binario [],int direccion_cortada []);
-//void TratarFallo(T_CACHE_LINE *tbl, char *MRAM, int ETQ,int linea, int bloque);
+void TratarFallo(T_CACHE_LINE *memoria, int direccion, char MRAM[]);  // en la variable direccion  tenemos guardadas la etiqueta, el bloque, la palabra y la linea
 int * PasarABinario(int * direccion_cortada,char MRAM []);
 int PasarADecimal(long long n);
 
@@ -29,15 +29,18 @@ int numfallos = 0; //iniciamos variable de numeor de fallos a 0 cadea vez que se
 int accesos=0;  //numero de accesos que se realizan durando la ejecucion del programa
 char texto[100];
 
+//inicializar array de Simul_RAM
+//char Simul_RAM[LRAM];
+char Simul_RAM[LRAM];
+
+
 int main (int argc, char** argv){
 	
 	//inicializar array de tipo T_CACHE_LINE 
 	T_CACHE_LINE memoria[NUM_FILAS];
 	LimpiarCACHE(memoria);
 	
-	//inicializar array de Simul_RAM
-	//char Simul_RAM[LRAM];
-	char Simul_RAM[LRAM];
+	
 	
 	//Abrirmos los archivos necesarios para el programa de calculo de cache en modo lectura
 	FILE *CONTENTS_RAM;
@@ -77,19 +80,17 @@ int main (int argc, char** argv){
 			{
 				 printf("T: %d, Acierto de CACHE %d, ADDR %s Label %X linea %02X palabra %02X DATO %02X \n", globaltime, accesos-numfallos+1, MRAM, direccion[0], direccion[1],direccion[2], memoria[direccion[1]].Data[direccion[2]]);
 			}else{
-				//TratarFallo(*memoria, MRAM, direccion/*aqui tenemos la etiqueta, la linea y el bloque*/);			
+				TratarFallo(*memoria, direccion, MRAM/*aqui tenemos la etiqueta, la linea y el bloque*/);			
 			}
 			
 			texto[accesos]=memoria[direccion[1]].Data[direccion[2]];		
 			accesos++;
 			sleep(1);	
 			
-		}
-			
-			
+		}			
 	}
 		
-	
+	VolcarCache(memoria);
 	
 	//cerrar los archivos
 	fclose(CONTENTS_RAM);
@@ -155,7 +156,7 @@ int * PasarABinario(int * direccion_cortada,char MRAM []){
                 case '9' :
                     strcat(binario, "1001");
                     break;
-                default : printf("\nValor invalido  %c",MRAM[i]);
+                default : printf("\nERROR en %c",MRAM[i]);
 		    }
         }else{
             switch(MRAM[i]){
@@ -177,7 +178,7 @@ int * PasarABinario(int * direccion_cortada,char MRAM []){
                 case 'F' :
                     strcat(binario, "1111");
                     break;
-                default : printf("\nValor invalido  %c",MRAM[i]);
+                default : printf("\nERROR en %c",MRAM[i]);
 		    }
         }              
     }
@@ -223,7 +224,60 @@ void ParsearDireccion(char binario [],int direccion_cortada []){
    memcpy(palabra_separada,&binario[8],4);
    int palabra_separada2 = atoi(palabra_separada);
    direccion_cortada[2]=PasarADecimal(palabra_separada2);
-   
-   
-
 }
+
+void TratarFallo(T_CACHE_LINE *memoria, int direccion, char MRAM[])
+{
+	numfallos++;
+	globaltime = globaltime + 10;
+	
+	 printf("T: %d, Fallo de CACHE %d, ADDR %s Label %X linea %02X palabra %02X bloque %02X \n", globaltime, numfallos, MRAM, direccion[0], direccion[1], direccion[2], direccion[3]);
+	 printf("Cargando el bloque %02X en la linea %02X \n",direccion[3], direccion[1]);
+	 
+	memoria[direccion[1]].ETQ=direccion[0];	 //Cargamos la nueva etiqueta 
+	
+	for(int i = 0; i<TAM_LINEA; i++)  //Actualizar los datos con la extraccion del texto
+	{
+		memoria[direccion[1]].Data[i] = Simul_RAM[direccion[3] + TAM_LINEA*i]	
+	}
+}
+
+void VolcarCACHE(T_CACHE_LINE *tbl)
+{
+	FILE * volcado;
+	char tambuffer[128]; //Tamñao de la informacion a meter en el archivo (tamaño en bytes)
+	int aux=0;	
+	
+	
+	printf("\n");
+    for(int i=0;i<NUM_FILAS;i++){
+        printf("ETQ: %02X \t",tbl[i].ETQ);
+        printf("Data ");
+        for(int j=TAM_LINEA-1;j>=0;j--){ //printea del reves para mostrar correcatmente
+            printf(" %x ",tbl[i].Data[j]);
+        }
+        printf("\n");
+    }
+    
+    volcado = fopen("CONTENTS_CACHE.bin", "w+b"); // sino exixte se crea el archivo en modo escritura y en binario
+	
+	if (volcado ==NUL)
+	{
+		printf("Error al crear el fichero CONTENTS_CACHE.bin\n");
+		return -1;
+	}
+	else {
+		 for(int i=0;i<NUM_FILAS;i++){
+            for(int j=0;j<TAM_LINEA;j++){
+                tambuffer[aux]=memoria[i].Data[j];  //guardamos la inftomacion de la estructura en una array de su tamaño para luego poder pasarlo al archivo
+                aux++;
+            }
+        }
+
+		for (int i = 0; i < 128; i++){
+            fwrite(tambuffer, sizeof(tambuffer),1,volcado);  //pasamos al archivo la informacion del array byte  a byte
+        }        
+	}
+
+
+
